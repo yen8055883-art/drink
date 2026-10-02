@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍷 주류박람회 술 평가표</title>
+<style>
+:root{
+  --bg:#fff8f2; --card:#ffffff; --text:#292522; --muted:#8b817a;
+  --accent:#9b5de5; --accent2:#f15bb5; --line:#eee5df;
+  --good:#38a169;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#fff8f2,#f8f3ff);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.wrap{max-width:760px;margin:auto;padding:22px 16px 60px}
+.hero{text-align:center;padding:22px 0 16px}
+.hero .emoji{font-size:48px}
+h1{font-size:28px;margin:8px 0 6px}
+.hero p{color:var(--muted);margin:0}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+.tab{border:1px solid var(--line);background:white;border-radius:14px;padding:12px 4px;font-weight:700;cursor:pointer}
+.tab.active{background:var(--accent);color:white;border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin:12px 0;box-shadow:0 5px 18px rgba(60,40,30,.05)}
+label.title{display:block;font-size:13px;color:var(--muted);margin-bottom:7px}
+input[type=text],textarea,select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;background:#fff}
+textarea{min-height:80px;resize:vertical}
+.criteria{display:grid;gap:13px;margin-top:16px}
+.criterion{display:grid;grid-template-columns:105px 1fr;gap:10px;align-items:center}
+.cname{font-weight:700;font-size:14px}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.score{border:1px solid var(--line);background:#faf8f6;border-radius:10px;padding:9px 0;text-align:center;cursor:pointer;font-weight:700}
+.score.selected{background:#ffe0f0;border-color:#f15bb5;color:#a11a62}
+.score:hover{transform:translateY(-1px)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+button{border:0;border-radius:13px;padding:13px;font:inherit;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#fff}.secondary{background:#f1ece8}
+.hidden{display:none}
+.list-head{display:flex;justify-content:space-between;align-items:center;margin:24px 2px 10px}
+.list-head h2{font-size:19px;margin:0}
+.item{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff;margin:9px 0}
+.item-top{display:flex;justify-content:space-between;gap:10px}
+.badge{font-size:12px;padding:5px 8px;border-radius:999px;background:#f2eaff;color:#7542a8;font-weight:800}
+.avg{font-size:20px;font-weight:900}
+.mini{color:var(--muted);font-size:13px;margin-top:6px}
+.actions{margin-top:10px;display:flex;gap:7px}
+.actions button{padding:8px 10px;font-size:12px}
+.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.summary .box{background:#faf7f4;border-radius:14px;padding:14px}
+.summary b{display:block;font-size:21px;margin-top:4px}
+.empty{text-align:center;color:var(--muted);padding:22px}
+.small{font-size:12px;color:var(--muted);line-height:1.5}
+@media(max-width:520px){
+ .criterion{grid-template-columns:1fr}
+ .tabs{grid-template-columns:repeat(2,1fr)}
+ .row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="emoji">🍶🍺🍷</div>
+    <h1>국제주류박람회 술 평가표</h1>
+    <p>예지언니랑 마시고, 평가하고, 1등 뽑기 🥂</p>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="card">
+    <label class="title">술 이름 / 브랜드</label>
+    <input id="name" type="text" placeholder="예: ○○ 막걸리">
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label class="title">나라 / 지역</label>
+        <input id="origin" type="text" placeholder="예: 대한민국 / 경기">
+      </div>
+      <div>
+        <label class="title">가격 (알면)</label>
+        <input id="price" type="text" placeholder="예: 15,000원">
+      </div>
+    </div>
+
+    <div class="criteria" id="criteria"></div>
+
+    <div style="margin-top:16px">
+      <label class="title">한줄평 / 메모</label>
+      <textarea id="memo" placeholder="예: 달달하고 탄산감 있어서 입문용으로 좋음!"></textarea>
+    </div>
+    <div class="btns">
+      <button class="secondary" onclick="resetForm()">초기화</button>
+      <button class="primary" onclick="saveDrink()">⭐ 평가 저장</button>
+    </div>
+  </div>
+
+  <div class="list-head">
+    <h2>📋 내가 마신 술</h2>
+    <button class="secondary" onclick="clearAll()" style="padding:8px 10px;font-size:12px">전체 삭제</button>
+  </div>
+  <div id="list"></div>
+
+  <div class="list-head"><h2>🏆 오늘의 결과</h2></div>
+  <div class="card">
+    <div class="summary" id="summary"></div>
+    <p class="small" style="margin-bottom:0">※ 평균점수는 해당 카테고리의 모든 평가항목 평균입니다. 같은 점수면 먼저 기록한 술을 먼저 표시합니다.</p>
+  </div>
+</div>
+
+<script>
+const data = {
+ "막걸리": {emoji:"🍶", criteria:["향","단맛","산미","탄산감","목넘김","깔끔함","재구매 의사"]},
+ "소주": {emoji:"🥃", criteria:["향","첫맛","단맛","쓴맛 밸런스","목넘김","깔끔함","안주 궁합"]},
+ "맥주": {emoji:"🍺", criteria:["향","몰트/고소함","홉/쓴맛","탄산감","청량감","목넘김","재구매 의사"]},
+ "와인": {emoji:"🍷", criteria:["향","산미","단맛","바디감","탄닌","여운","재구매 의사"]}
+};
+let category="막걸리", scores={}, drinks=JSON.parse(localStorage.getItem("drinkExpo")||"[]");
+
+function renderTabs(){
+ const el=document.getElementById("tabs");
+ el.innerHTML=Object.entries(data).map(([k,v])=>`<button class="tab ${k===category?'active':''}" onclick="changeCategory('${k}')">${v.emoji} ${k}</button>`).join("");
+}
+function renderCriteria(){
+ const c=document.getElementById("criteria");
+ scores={};
+ c.innerHTML=data[category].criteria.map(x=>`
+  <div class="criterion">
+    <div class="cname">${x}</div>
+    <div class="scale">${[1,2,3,4,5].map(n=>`<div class="score" data-key="${x}" data-score="${n}" onclick="pick('${x}',${n})">${n}</div>`).join("")}</div>
+  </div>`).join("");
+}
+function pick(key,n){
+ scores[key]=n;
+ document.querySelectorAll(`.score[data-key="${CSS.escape(key)}"]`).forEach(e=>e.classList.toggle("selected",+e.dataset.score===n));
+}
+function changeCategory(k){
+ category=k; resetForm(); renderTabs(); renderCriteria();
+}
+function resetForm(){
+ document.getElementById("name").value="";
+ document.getElementById("origin").value="";
+ document.getElementById("price").value="";
+ document.getElementById("memo").value="";
+ scores={};
+ document.querySelectorAll(".score").forEach(e=>e.classList.remove("selected"));
+}
+function saveDrink(){
+ const name=document.getElementById("name").value.trim();
+ if(!name){alert("술 이름을 먼저 적어줘!");return;}
+ const criteria=data[category].criteria;
+ const missing=criteria.filter(x=>!scores[x]);
+ if(missing.length){alert("아직 평가 안 한 항목이 있어!\\n\\n"+missing.join(", "));return;}
+ const vals=criteria.map(x=>scores[x]);
+ const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+ drinks.push({id:Date.now(),category,name,origin:document.getElementById("origin").value.trim(),price:document.getElementById("price").value.trim(),memo:document.getElementById("memo").value.trim(),scores:{...scores},avg});
+ localStorage.setItem("drinkExpo",JSON.stringify(drinks));
+ resetForm(); renderList(); renderSummary();
+}
+function renderList(){
+ const el=document.getElementById("list");
+ if(!drinks.length){el.innerHTML='<div class="empty">아직 기록한 술이 없어!<br>첫 잔부터 평가해보자 🍻</div>';return;}
+ el.innerHTML=[...drinks].reverse().map(d=>`
+  <div class="item">
+    <div class="item-top">
+      <div><span class="badge">${data[d.category].emoji} ${d.category}</span> <strong>${escapeHtml(d.name)}</strong>
+      <div class="mini">${escapeHtml([d.origin,d.price].filter(Boolean).join(" · "))}</div></div>
+      <div class="avg">${d.avg.toFixed(1)}<span style="font-size:12px"> / 5</span></div>
+    </div>
+    <div class="mini">${data[d.category].criteria.map(k=>`${k} ${d.scores[k]}`).join("  ·  ")}</div>
+    ${d.memo?`<div style="margin-top:8px">${escapeHtml(d.memo)}</div>`:""}
+    <div class="actions"><button class="secondary" onclick="removeDrink(${d.id})">삭제</button></div>
+  </div>`).join("");
+}
+function removeDrink(id){
+ drinks=drinks.filter(x=>x.id!==id); localStorage.setItem("drinkExpo",JSON.stringify(drinks));renderList();renderSummary();
+}
+function clearAll(){
+ if(confirm("오늘 기록을 전부 삭제할까?")){drinks=[];localStorage.removeItem("drinkExpo");renderList();renderSummary();}
+}
+function renderSummary(){
+ const el=document.getElementById("summary");
+ el.innerHTML=Object.keys(data).map(k=>{
+  const arr=drinks.filter(d=>d.category===k);
+  if(!arr.length)return `<div class="box"><span>${data[k].emoji} ${k}</span><b style="font-size:15px;color:#aaa">아직 없음</b></div>`;
+  const winner=[...arr].sort((a,b)=>b.avg-a.avg)[0];
+  return `<div class="box"><span>${data[k].emoji} ${k} · ${arr.length}종</span><b>${winner.avg.toFixed(1)}점</b><div class="mini">🏆 ${escapeHtml(winner.name)}</div></div>`;
+ }).join("");
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+renderTabs();renderCriteria();renderList();renderSummary();
+</script>
+</body>
+</html>
